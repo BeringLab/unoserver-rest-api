@@ -31,7 +31,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:   "unoserver-addr",
-			Value:  "127.0.0.1:2002",
+			Value:  "127.0.0.1:2003", // unoserver 2.x uses port 2003 for XMLRPC (2002 is LibreOffice UNO port)
 			Usage:  "The unoserver addr used by the unoconvert",
 			EnvVar: "UNOSERVER_ADDR",
 		},

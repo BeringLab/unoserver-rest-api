@@ -70,15 +70,18 @@ func (u *Unoconvert) SetContextTimeout(timeout time.Duration) {
 func (u *Unoconvert) Run(infile string, outfile string, opts ...string) error {
 	var args = []string{}
 
+	// Use --host instead of deprecated --interface for unoserver 2.x compatibility
 	connections := []string{
-		fmt.Sprintf("--interface=%s", u.Interface),
+		fmt.Sprintf("--host=%s", u.Interface),
 		fmt.Sprintf("--port=%s", u.Port),
 	}
 
 	files := []string{infile, outfile}
 
-	args = append(connections, files...)
-	args = append(args, opts...)
+	// unoconvert 2.x expects: options first, then positional args (files)
+	// Order: connections + opts + files
+	args = append(connections, opts...)
+	args = append(args, files...)
 
 	cmd := exec.Command(u.Executable, args...)
 
@@ -91,15 +94,18 @@ func (u *Unoconvert) RunContext(ctx context.Context, infile string, outfile stri
 
 	var args = []string{}
 
+	// Use --host instead of deprecated --interface for unoserver 2.x compatibility
 	connections := []string{
-		fmt.Sprintf("--interface=%s", u.Interface),
+		fmt.Sprintf("--host=%s", u.Interface),
 		fmt.Sprintf("--port=%s", u.Port),
 	}
 
 	files := []string{infile, outfile}
 
-	args = append(connections, files...)
-	args = append(args, opts...)
+	// unoconvert 2.x expects: options first, then positional args (files)
+	// Order: connections + opts + files
+	args = append(connections, opts...)
+	args = append(args, files...)
 
 	cmd := exec.CommandContext(ctx, u.Executable, args...)
 	return cmd.Run()
