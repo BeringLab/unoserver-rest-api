@@ -1,0 +1,32 @@
+# Full unoserver image with LibreOffice, unoserver 2.x, and REST API
+# This image is ready to use - no build required on deployment
+
+# Build REST API binary
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /build
+COPY . .
+RUN CGO_ENABLED=0 go build -o unoserver-rest-api .
+
+# Final image with LibreOffice + unoserver + REST API
+FROM libreofficedocker/libreoffice-unoserver:3.21
+
+# Upgrade unoserver to 2.2.2 (supports --input-filter for PDF import)
+RUN /venv/bin/pip install --no-cache-dir unoserver==2.2.2
+
+# Install REST API binary (BeringLab fork with unoserver 2.x compatibility)
+# Modifications:
+# 1. Uses --host instead of deprecated --interface
+# 2. Reorders arguments: options before positional args (files last)
+# 3. Default port changed from 2002 to 2003 (XMLRPC port)
+COPY --from=builder /build/unoserver-rest-api /usr/bin/unoserver-rest-api
+RUN chmod +x /usr/bin/unoserver-rest-api
+
+# Set unoconvert binary path for REST API
+ENV UNOCONVERT_BIN=/venv/bin/unoconvert
+
+# Expose ports:
+# 2002 - LibreOffice UNO port
+# 2003 - unoserver XMLRPC port
+# 2004 - REST API port
+EXPOSE 2002 2003 2004
